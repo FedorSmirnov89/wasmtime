@@ -827,6 +827,7 @@ impl RunCommand {
             invoke,
             preloads,
             module_and_args,
+            wali: false,
         }
     }
 }

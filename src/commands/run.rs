@@ -13,7 +13,7 @@ use std::ffi::OsString;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use std::thread;
-use wasmtime::{Engine, Func, Module, Store, StoreLimits, Val, ValType};
+use wasmtime::{Engine, Func, Linker, Module, Store, StoreLimits, Val, ValType};
 use wasmtime_wasi::maybe_exit_on_error;
 use wasmtime_wasi::preview2;
 use wasmtime_wasi::sync::{ambient_authority, Dir, TcpListener, WasiCtxBuilder};
@@ -26,6 +26,10 @@ use wasmtime_wasi_threads::WasiThreadsCtx;
 
 #[cfg(feature = "wasi-http")]
 use wasmtime_wasi_http::WasiHttpCtx;
+
+use self::wali::WaliCtx;
+
+mod wali;
 
 fn parse_env_var(s: &str) -> Result<(String, Option<String>)> {
     let mut parts = s.splitn(2, '=');
@@ -99,6 +103,15 @@ pub struct RunCommand {
     /// arguments will be interpreted as arguments to the function specified.
     #[arg(value_name = "WASM", trailing_var_arg = true, required = true)]
     pub module_and_args: Vec<OsString>,
+
+    ///
+    /// Flag which determines whether the module which is run is compiled against
+    /// the WALI interface. If this flag is set, the runtime will be configured to
+    /// (a) not provide the WASI interface and (b) to provide the host functions
+    /// necessary to run the Linux system calls from the module.
+    ///
+    #[arg(long = "wali", default_value = "false")]
+    pub wali: bool,
 }
 
 enum CliLinker {
@@ -110,6 +123,11 @@ enum CliLinker {
 impl RunCommand {
     /// Executes the command.
     pub fn execute(mut self) -> Result<()> {
+        match &self.wali {
+            true => println!("running the module as a WALI module"),
+            false => println!("running the module as a WASI module"),
+        }
+
         self.run.common.init_logging()?;
 
         let mut config = self.run.common.config(None)?;
@@ -162,21 +180,58 @@ impl RunCommand {
         }
 
         let host = Host::default();
-        let mut store = Store::new(&engine, host);
-        self.populate_with_wasi(&mut linker, &mut store, &main)?;
 
+        if !self.wali {
+            // This is the 'normal' flow of wasmtime: uses a store with the host struct
+            // and offers the WASI host functions.
+            self.instantiate_and_run_wasi(engine, host, &mut linker, &main)
+        } else {
+            // This is the 'wali' flow of wasmtime: uses a store with the WaliCtx struct
+            // and offers the WALI host functions.
+            //
+            // Things that we currently don't support here:
+            // - data limits for the store
+            // - fuel for the store
+            // - preloads
+
+            let mut linker = wasmtime::Linker::new(&engine);
+            self.instantiate_and_run_wali(engine, &mut linker, &main)
+        }
+    }
+
+    fn instantiate_and_run_wali(
+        &self,
+        engine: Engine,
+        linker: &mut Linker<WaliCtx>,
+        main: &RunTarget,
+    ) -> Result<(), anyhow::Error> {
+        let wali_ctx = WaliCtx::default();
+        let mut store = Store::new(&engine, wali_ctx);
+        self.link_wali_host_functions(linker)?;
+
+        if !self.preloads.is_empty() {
+            bail!("preloads are not supported with WALI modules");
+        }
+
+        self.load_wali_module(&mut store, linker, main)
+    }
+
+    fn instantiate_and_run_wasi(
+        &self,
+        engine: Engine,
+        host: Host,
+        linker: &mut CliLinker,
+        main: &RunTarget,
+    ) -> Result<(), Error> {
+        let mut store = Store::new(&engine, host);
+        self.populate_with_wasi(linker, &mut store, main)?;
         store.data_mut().limits = self.run.store_limits();
         store.limiter(|t| &mut t.limits);
-
-        // If fuel has been configured, we want to add the configured
-        // fuel amount to this store.
         if let Some(fuel) = self.run.common.wasm.fuel {
             store.set_fuel(fuel)?;
         }
-
-        // Load the preload wasm modules.
         let mut modules = Vec::new();
-        if let RunTarget::Core(m) = &main {
+        if let RunTarget::Core(m) = main {
             modules.push((String::new(), m.clone()));
         }
         for (name, path) in self.preloads.iter() {
@@ -184,12 +239,14 @@ impl RunCommand {
             let module = match self.run.load_module(&engine, path)? {
                 RunTarget::Core(m) => m,
                 #[cfg(feature = "component-model")]
-                RunTarget::Component(_) => bail!("components cannot be loaded with `--preload`"),
+                RunTarget::Component(_) => {
+                    bail!("components cannot be loaded with `--preload`")
+                }
             };
             modules.push((name.clone(), module.clone()));
 
             // Add the module's functions to the linker.
-            match &mut linker {
+            match linker {
                 #[cfg(feature = "cranelift")]
                 CliLinker::Core(linker) => {
                     linker.module(&mut store, name, &module).context(format!(
@@ -208,17 +265,16 @@ impl RunCommand {
                 }
             }
         }
-
         // Load the main wasm module.
         match self
-            .load_main_module(&mut store, &mut linker, &main, modules)
+            .load_main_module(&mut store, linker, &main, modules)
             .with_context(|| {
                 format!(
                     "failed to run main module `{}`",
                     self.module_and_args[0].to_string_lossy()
                 )
             }) {
-            Ok(()) => (),
+            Ok(()) => Ok(()),
             Err(e) => {
                 // Exit the process if Wasmtime understands the error;
                 // otherwise, fall back on Rust's default error printing/return
@@ -227,7 +283,7 @@ impl RunCommand {
             }
         }
 
-        Ok(())
+        // Ok((store, modules))
     }
 
     fn compute_preopen_dirs(&self) -> Result<Vec<(String, Dir)>> {
@@ -473,7 +529,7 @@ impl RunCommand {
         result
     }
 
-    fn invoke_func(&self, store: &mut Store<Host>, func: Func) -> Result<()> {
+    fn invoke_func<Context>(&self, store: &mut Store<Context>, func: Func) -> Result<()> {
         let ty = func.ty(&store);
         if ty.params().len() > 0 {
             eprintln!(
@@ -549,7 +605,7 @@ impl RunCommand {
     }
 
     #[cfg(feature = "coredump")]
-    fn handle_core_dump(&self, store: &mut Store<Host>, err: Error) -> Error {
+    fn handle_core_dump<Context>(&self, store: &mut Store<Context>, err: Error) -> Error {
         let coredump_path = match &self.run.common.debug.coredump {
             Some(path) => path,
             None => return err,
@@ -885,8 +941,8 @@ fn ctx_set_listenfd(mut num_fd: usize, builder: &mut WasiCtxBuilder) -> Result<u
 }
 
 #[cfg(feature = "coredump")]
-fn write_core_dump(
-    store: &mut Store<Host>,
+fn write_core_dump<Context>(
+    store: &mut Store<Context>,
     err: &anyhow::Error,
     name: &str,
     path: &str,
