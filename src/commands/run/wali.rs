@@ -2,11 +2,8 @@
 //! (eventually, this should (a) live in a separate crate and (b) be only compiled
 //! if the `wali` feature is enabled)
 
-use anyhow::Result;
-use wasmtime::Linker;
-
-use super::RunCommand;
-
+mod host_functions;
+mod memory;
 mod run;
 
 ///
@@ -15,10 +12,3 @@ mod run;
 ///
 #[derive(Default)]
 pub(crate) struct WaliCtx {}
-
-impl RunCommand {
-    pub(super) fn link_wali_host_functions(&self, linker: &mut Linker<WaliCtx>) -> Result<()> {
-        println!("linking wali functions");
-        Ok(())
-    }
-}
