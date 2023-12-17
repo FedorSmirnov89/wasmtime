@@ -3,7 +3,7 @@
 use anyhow::Result;
 use wasmtime::Linker;
 
-use crate::commands::RunCommand;
+use crate::commands::{run::wali::host_functions::sys_calls::syscall_writev, RunCommand};
 
 use tracing::debug;
 
@@ -33,6 +33,7 @@ impl RunCommand {
         // sys calls
         linker.func_wrap("wali", "SYS_set_tid_address", set_tid_address)?;
         linker.func_wrap("wali", "SYS_ioctl", ioctl)?;
+        linker.func_wrap("wali", "SYS_writev", syscall_writev)?;
 
         Ok(())
     }

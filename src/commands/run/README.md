@@ -35,3 +35,77 @@ We are using the tracing-based logging infrastructure of Wasmtime for the loggin
 ```
 WASMTIME_LOG=wasmtime_cli::commands::run::wali=[info|debug|...] [run_command]
 ```
+
+## Implementation Progress
+
+Currently, the implementation focus is on implementing the functionality necessary to pass the test suite defined in the [Wali repo](https://github.com/arjunr2/WALI/tree/main/tests). The progress in this is detailed below:
+
+### Passing Tests
+
+- base.wasm
+- printf.wasm
+
+### Not Passing Tests
+- access.wasm
+- access_thread.wasm
+- alarm.wasm
+- alarm_signal.wasm
+- args.wasm
+- clock_gettime.wasm
+- clock_nanosleep.wasm
+- dup.wasm
+- epoll.wasm
+- execve.wasm
+- exit.wasm
+- fcntl.wasm
+- fileops.wasm
+- flock.wasm
+- fn_ptr.wasm
+- fn_ptr_simple.wasm
+- fork.wasm
+- fstat.wasm
+- fstat2.wasm
+- fstatfs.wasm
+- futex_stop.wasm
+- getdirents.wasm
+- getenv.wasm
+- infinite_loop.wasm
+- kill.wasm
+- loop.wasm
+- lseek.wasm
+- lstat.wasm
+- malloc.wasm
+- math.wasm
+- mmap.wasm
+- mmap2.wasm
+- mprotect.wasm
+- msghdr.wasm
+- nanosleep.wasm
+- noflock.wasm
+- pipe.wasm
+- platform.wasm
+- raise.wasm
+- rawfork.wasm
+- safe_thread.wasm
+- setpgid.wasm
+- sigaltstack.wasm
+- signal.wasm
+- signal2.wasm
+- signal3.wasm
+- sigprocmask.wasm
+- sigsuspend.wasm
+- simple_thread.wasm
+- sizes.wasm
+- sleep_kill.wasm
+- socket_client.wasm
+- socket_server.wasm
+- stat.wasm
+- statall.wasm
+- statfs.wasm
+- streamin.wasm
+- thread.wasm
+- uname.wasm
+- utime.wasm
+- va_args.wasm
+- wprintf.wasm
+- write.wasm
