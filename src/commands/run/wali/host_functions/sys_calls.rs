@@ -13,9 +13,11 @@ use crate::commands::run::wali::{
 };
 
 mod mmap;
+mod munmap;
 mod writev;
 
 pub(crate) use mmap::syscall_mmap;
+pub(crate) use munmap::syscall_munmap;
 pub(crate) use writev::syscall_writev;
 
 pub(super) fn set_tid_address(mut caller: Caller<'_, WaliCtx>, ptr_wasm: i32) -> i64 {
@@ -103,7 +105,7 @@ pub(super) fn syscall_write(
 
 pub(super) fn syscall_brk(_a1: i32) -> i64 {
     info!(
-        "module has executed the 'brk' host function.\nIn WASM context, this corresponds to a NOP"
+        "module has executed the 'brk' host function. In WASM context, this corresponds to a NOP"
     );
     0
 }
@@ -114,4 +116,61 @@ pub(super) fn syscall_mprotect(mut caller: Caller<'_, WaliCtx>, a1: i32, a2: i32
     let host_address = WasmAddress::new(a1, &memory).to_host_address(&memory);
     let sys_call_result = unsafe { libc::mprotect(host_address.as_void_ptr(), a2 as usize, a3) };
     sys_call_result as i64
+}
+
+pub(super) fn syscall_access(
+    mut caller: Caller<'_, WaliCtx>,
+    path_name_addr: i32,
+    mode: i32,
+) -> i64 {
+    info!("syscall access: a1: {path_name_addr}; a2: {mode}.");
+
+    let memory = caller.as_memory();
+    let host_address = WasmAddress::new(path_name_addr, &memory)
+        .to_host_address(&memory)
+        .as_i64_ptr();
+
+    #[cfg(target_arch = "x86_64")]
+    {
+        unsafe { libc::syscall(libc::SYS_access, host_address, mode) }
+    }
+    #[cfg(not(target_arch = "x86_64"))]
+    {
+        panic!("syscall access not implemented for architectures other than x86")
+    }
+}
+
+pub(super) fn syscall_open(mut caller: Caller<'_, WaliCtx>, a1: i32, a2: i32, a3: i32) -> i64 {
+    let memory = caller.as_memory();
+    let host_address = WasmAddress::new(a1, &memory)
+        .to_host_address(&memory)
+        .as_i64_ptr();
+
+    #[cfg(target_arch = "x86_64")]
+    {
+        unsafe { libc::syscall(libc::SYS_open, host_address, a2, a3) }
+    }
+    #[cfg(not(target_arch = "x86_64"))]
+    {
+        panic!("syscall access not implemented for architectures other than x86")
+    }
+}
+
+pub(super) fn syscall_nanosleep(mut caller: Caller<'_, WaliCtx>, a1: i32, a2: i32) -> i64 {
+    let memory = caller.as_memory();
+    let host_address_1 = WasmAddress::new(a1, &memory)
+        .to_host_address(&memory)
+        .as_i64_ptr();
+    let host_address_2 = WasmAddress::new(a2, &memory)
+        .to_host_address(&memory)
+        .as_i64_ptr();
+    unsafe { libc::syscall(libc::SYS_nanosleep, host_address_1, host_address_2) }
+}
+
+pub(super) fn syscall_uname(mut caller: Caller<'_, WaliCtx>, a1: i32) -> i64 {
+    let memory = caller.as_memory();
+    let host_address = WasmAddress::new(a1, &memory)
+        .to_host_address(&memory)
+        .as_i64_ptr();
+    unsafe { libc::syscall(libc::SYS_uname, host_address) }
 }

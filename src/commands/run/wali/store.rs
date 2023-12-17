@@ -56,7 +56,7 @@ impl MMapData {
         self.n_mmap_pages += n_pages;
     }
 
-    fn unmap_pages_from_end(&mut self, n_pages: usize) {
+    pub(crate) fn unmap_pages_from_end(&mut self, n_pages: usize) {
         self.n_mmap_pages -= n_pages;
     }
 

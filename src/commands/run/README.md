@@ -41,16 +41,24 @@ WASMTIME_LOG=wasmtime_cli::commands::run::wali=[error|warn|info|debug|trace] [ru
 Currently, the implementation focus is on implementing the functionality necessary to pass the test suite defined in the [Wali repo](https://github.com/arjunr2/WALI/tree/main/tests). The progress in this is detailed below:
 
 ### Passing Tests
-
+- access.wasm
 - args.wasm
 - base.wasm
 - clock_gettime.wasm
 - clock_nanosleep.wasm
+- math.wasm
+- mmap.wasm
+- mmap2.wasm
+- mprotect.wasm
+- nanosleep.wasm
 - printf.wasm
+- sizes.wasm
+- uname.wasm
+- va_args.wasm
 - write.wasm
+- wprintf.wasm
 
 ### Not Passing Tests
-- access.wasm
 - access_thread.wasm
 - alarm.wasm -- needs fork
 - alarm_signal.wasm
@@ -76,12 +84,7 @@ Currently, the implementation focus is on implementing the functionality necessa
 - lseek.wasm
 - lstat.wasm
 - malloc.wasm
-- math.wasm
-- mmap.wasm
-- mmap2.wasm
-- mprotect.wasm
 - msghdr.wasm
-- nanosleep.wasm
 - noflock.wasm
 - pipe.wasm
 - platform.wasm
@@ -96,7 +99,6 @@ Currently, the implementation focus is on implementing the functionality necessa
 - sigprocmask.wasm
 - sigsuspend.wasm
 - simple_thread.wasm
-- sizes.wasm
 - sleep_kill.wasm
 - socket_client.wasm
 - socket_server.wasm
@@ -105,7 +107,4 @@ Currently, the implementation focus is on implementing the functionality necessa
 - statfs.wasm
 - streamin.wasm
 - thread.wasm
-- uname.wasm
 - utime.wasm
-- va_args.wasm
-- wprintf.wasm
