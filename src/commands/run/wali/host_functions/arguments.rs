@@ -5,7 +5,7 @@ use tracing::{error, info};
 use wasmtime::Caller;
 
 use crate::commands::run::wali::{
-    memory::{address::WasmAddress, writing::write_c_string_into_module_memory},
+    memory::{address::WasmAddress, writing::write_c_string_into_module_memory, AsMemory},
     WaliCtx,
 };
 
@@ -13,7 +13,7 @@ use crate::commands::run::wali::{
 /// Returns the number of arguments that the module was started with
 ///
 pub(super) fn cl_get_argc(caller: Caller<'_, WaliCtx>) -> i32 {
-    let arg_c = caller.data().arguments.len();
+    let arg_c = caller.data().arg_len();
     info!("module requested number of arguments; Number of arguments is {arg_c}");
     arg_c as i32
 }
@@ -34,7 +34,7 @@ pub(super) fn cl_get_argv_len(caller: Caller<'_, WaliCtx>, arg_idx: i32) -> i32 
 }
 
 fn get_arg_len(caller: &Caller<'_, WaliCtx>, arg_idx: usize) -> Result<usize> {
-    caller.data().arg_len(arg_idx)
+    caller.data().arg_byte_len(arg_idx)
 }
 
 ///
@@ -42,7 +42,7 @@ fn get_arg_len(caller: &Caller<'_, WaliCtx>, arg_idx: usize) -> Result<usize> {
 ///
 pub(super) fn cl_copy_argv(mut caller: Caller<'_, WaliCtx>, argv_addr: i32, arg_idx: i32) -> i32 {
     info!("module trying to copy argument at idx {arg_idx} into memory at position {argv_addr}");
-    let addr_wasm = WasmAddress::new(argv_addr, &mut caller);
+    let addr_wasm = WasmAddress::new(argv_addr, &caller.as_memory());
     match copy_arg_into_module(&mut caller, addr_wasm, arg_idx as usize) {
         Ok(n_written) => n_written as i32,
         Err(e) => {

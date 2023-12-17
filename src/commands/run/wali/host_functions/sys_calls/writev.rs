@@ -1,7 +1,10 @@
 use anyhow::Result;
 use wasmtime::Caller;
 
-use crate::commands::run::wali::{memory::address::WasmAddress, WaliCtx};
+use crate::commands::run::wali::{
+    memory::{address::WasmAddress, AsMemory},
+    WaliCtx,
+};
 
 use tracing::{error, info};
 
@@ -12,7 +15,7 @@ pub(crate) fn syscall_writev(
     iov_cnt: i32,
 ) -> i64 {
     info!("module has executed the 'writev' host function");
-    let iov_addr_wasm = WasmAddress::new(iov_offset, &mut caller);
+    let iov_addr_wasm = WasmAddress::new(iov_offset, &caller.as_memory());
     match syscall_writev_impl(caller, fd, iov_addr_wasm, iov_cnt) {
         Ok(r) => r,
         Err(e) => {
@@ -28,7 +31,8 @@ fn syscall_writev_impl(
     iov_addr_wasm: WasmAddress,
     iov_cnt: i32,
 ) -> Result<i64> {
-    let iov_addr_host = iov_addr_wasm.to_host_address(&mut caller);
+    let memory = caller.as_memory();
+    let iov_addr_host = iov_addr_wasm.to_host_address(&memory);
 
     let iov_ptr = iov_addr_host.as_i64_ptr() as *const IoVecWasm;
     let iov_slice = unsafe { std::slice::from_raw_parts(iov_ptr, iov_cnt as usize) };
@@ -36,8 +40,8 @@ fn syscall_writev_impl(
     let mut iovs_host = vec![];
     for iov in iov_slice {
         let size = iov.iov_len as usize;
-        let base_wasm = WasmAddress::new(iov.iov_base, &mut caller);
-        let base_host = base_wasm.to_host_address(&mut caller).as_void_ptr();
+        let base_wasm = WasmAddress::new(iov.iov_base, &memory);
+        let base_host = base_wasm.to_host_address(&memory).as_void_ptr();
         let iov_host = libc::iovec {
             iov_base: base_host,
             iov_len: size,

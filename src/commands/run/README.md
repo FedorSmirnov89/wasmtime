@@ -33,7 +33,7 @@ To run the module with Wasmtime, run
 We are using the tracing-based logging infrastructure of Wasmtime for the logging within the Wali code. To enable logging of messages of the `wali` module and its submodules, set the corresponding environment variable when running the run command like so:
 
 ```
-WASMTIME_LOG=wasmtime_cli::commands::run::wali=[info|debug|...] [run_command]
+WASMTIME_LOG=wasmtime_cli::commands::run::wali=[error|warn|info|debug|trace] [run_command]
 ```
 
 ## Implementation Progress
@@ -42,6 +42,7 @@ Currently, the implementation focus is on implementing the functionality necessa
 
 ### Passing Tests
 
+- args.wasm
 - base.wasm
 - clock_gettime.wasm
 - clock_nanosleep.wasm
@@ -49,11 +50,10 @@ Currently, the implementation focus is on implementing the functionality necessa
 - write.wasm
 
 ### Not Passing Tests
-- access.wasm -- needs arguments
+- access.wasm
 - access_thread.wasm
 - alarm.wasm -- needs fork
 - alarm_signal.wasm
-- args.wasm
 - dup.wasm
 - epoll.wasm
 - execve.wasm

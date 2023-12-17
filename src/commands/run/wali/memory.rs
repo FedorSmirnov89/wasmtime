@@ -9,11 +9,26 @@ use super::WaliCtx;
 pub(crate) mod address;
 pub(crate) mod writing;
 
+pub(crate) trait AddressCalculation {
+    fn address_of_offset(&self, offset: usize) -> usize;
+    fn memory_size(&self) -> usize;
+}
+
+impl AddressCalculation for &SharedMemory {
+    fn address_of_offset(&self, offset: usize) -> usize {
+        self.data().get(offset).expect("memory bound violation") as *const _ as usize
+    }
+
+    fn memory_size(&self) -> usize {
+        self.data().len()
+    }
+}
+
 pub(crate) trait AsMemory {
     fn as_memory(&mut self) -> SharedMemory;
 }
 
-impl AsMemory for &mut Caller<'_, WaliCtx> {
+impl AsMemory for Caller<'_, WaliCtx> {
     fn as_memory(&mut self) -> SharedMemory {
         let memory_export = self
             .get_export("memory")
@@ -37,6 +52,21 @@ impl AsMemorySlice for &mut Caller<'_, WaliCtx> {
                 memory.data().as_ptr() as *mut AtomicU8,
                 memory.data().len(),
             )
+        }
+    }
+}
+
+pub(crate) trait PageAlignment {
+    fn page_aligned(&self, page_size: usize) -> usize;
+}
+
+impl PageAlignment for usize {
+    fn page_aligned(&self, page_size: usize) -> usize {
+        let offset = *self & (page_size - 1);
+        if offset == 0 {
+            *self
+        } else {
+            *self + page_size - offset
         }
     }
 }

@@ -7,8 +7,8 @@ use crate::commands::{
     run::wali::host_functions::{
         arguments::{cl_copy_argv, cl_get_argc, cl_get_argv_len},
         sys_calls::{
-            syscall_brk, syscall_clock_gettime, syscall_clock_nanosleep, syscall_write,
-            syscall_writev,
+            syscall_brk, syscall_clock_gettime, syscall_clock_nanosleep, syscall_mmap,
+            syscall_mprotect, syscall_write, syscall_writev,
         },
     },
     RunCommand,
@@ -50,6 +50,8 @@ impl RunCommand {
         linker.func_wrap("wali", "SYS_clock_gettime", syscall_clock_gettime)?;
         linker.func_wrap("wali", "SYS_clock_nanosleep", syscall_clock_nanosleep)?;
         linker.func_wrap("wali", "SYS_ioctl", ioctl)?;
+        linker.func_wrap("wali", "SYS_mmap", syscall_mmap)?;
+        linker.func_wrap("wali", "SYS_mprotect", syscall_mprotect)?;
         linker.func_wrap("wali", "SYS_set_tid_address", set_tid_address)?;
         linker.func_wrap("wali", "SYS_write", syscall_write)?;
         linker.func_wrap("wali", "SYS_writev", syscall_writev)?;
