@@ -1,7 +1,7 @@
 use anyhow::Result;
 use wasmtime::Caller;
 
-use crate::commands::run::wali::{memory::WasmAddress, WaliCtx};
+use crate::commands::run::wali::{memory::address::WasmAddress, WaliCtx};
 
 use tracing::{error, info};
 

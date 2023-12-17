@@ -7,7 +7,7 @@ use wasmtime::Caller;
 
 use tracing::info;
 
-use crate::commands::run::wali::{memory::WasmAddress, WaliCtx};
+use crate::commands::run::wali::{memory::address::WasmAddress, WaliCtx};
 
 mod writev;
 
@@ -93,4 +93,11 @@ pub(super) fn syscall_write(
     let host_address = wasm_address.to_host_address(&mut caller);
 
     unsafe { libc::syscall(libc::SYS_write, a1, host_address, a3) }
+}
+
+pub(super) fn syscall_brk(_a1: i32) -> i64 {
+    info!(
+        "module has executed the 'brk' host function.\nIn WASM context, this corresponds to a NOP"
+    );
+    0
 }

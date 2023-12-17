@@ -207,7 +207,7 @@ impl RunCommand {
         linker: &mut Linker<WaliCtx>,
         main: &RunTarget,
     ) -> Result<(), anyhow::Error> {
-        let wali_ctx = WaliCtx::default();
+        let wali_ctx = WaliCtx::new(&self);
         let mut store = Store::new(&engine, wali_ctx);
         self.link_wali_host_functions(linker)?;
 

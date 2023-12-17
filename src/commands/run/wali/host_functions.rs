@@ -4,8 +4,12 @@ use anyhow::Result;
 use wasmtime::Linker;
 
 use crate::commands::{
-    run::wali::host_functions::sys_calls::{
-        syscall_clock_gettime, syscall_clock_nanosleep, syscall_write, syscall_writev,
+    run::wali::host_functions::{
+        arguments::{cl_copy_argv, cl_get_argc, cl_get_argv_len},
+        sys_calls::{
+            syscall_brk, syscall_clock_gettime, syscall_clock_nanosleep, syscall_write,
+            syscall_writev,
+        },
     },
     RunCommand,
 };
@@ -19,6 +23,7 @@ use self::{
 };
 
 use super::WaliCtx;
+pub(crate) mod arguments;
 pub(crate) mod env_vars;
 pub(crate) mod sys_calls;
 pub(crate) mod wali_specific;
@@ -35,7 +40,13 @@ impl RunCommand {
         // env vars
         linker.func_wrap("wali", "__get_init_envfile", get_init_envfile)?;
 
+        // arguments
+        linker.func_wrap("wali", "__cl_get_argc", cl_get_argc)?;
+        linker.func_wrap("wali", "__cl_get_argv_len", cl_get_argv_len)?;
+        linker.func_wrap("wali", "__cl_copy_argv", cl_copy_argv)?;
+
         // sys calls
+        linker.func_wrap("wali", "SYS_brk", syscall_brk)?;
         linker.func_wrap("wali", "SYS_clock_gettime", syscall_clock_gettime)?;
         linker.func_wrap("wali", "SYS_clock_nanosleep", syscall_clock_nanosleep)?;
         linker.func_wrap("wali", "SYS_ioctl", ioctl)?;
