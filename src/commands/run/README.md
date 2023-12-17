@@ -43,20 +43,21 @@ Currently, the implementation focus is on implementing the functionality necessa
 ### Passing Tests
 
 - base.wasm
-- printf.wasm
-
-### Not Passing Tests
-- access.wasm
-- access_thread.wasm
-- alarm.wasm
-- alarm_signal.wasm
-- args.wasm
 - clock_gettime.wasm
 - clock_nanosleep.wasm
+- printf.wasm
+- write.wasm
+
+### Not Passing Tests
+- access.wasm -- needs arguments
+- access_thread.wasm
+- alarm.wasm -- needs fork
+- alarm_signal.wasm
+- args.wasm
 - dup.wasm
 - epoll.wasm
 - execve.wasm
-- exit.wasm
+- exit.wasm -- needs sys_exit_group
 - fcntl.wasm
 - fileops.wasm
 - flock.wasm
@@ -108,4 +109,3 @@ Currently, the implementation focus is on implementing the functionality necessa
 - utime.wasm
 - va_args.wasm
 - wprintf.wasm
-- write.wasm
