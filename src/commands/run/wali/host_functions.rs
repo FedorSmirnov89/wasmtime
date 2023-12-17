@@ -5,6 +5,8 @@ use wasmtime::Linker;
 
 use crate::commands::RunCommand;
 
+use tracing::debug;
+
 use self::{
     env_vars::get_init_envfile,
     sys_calls::{ioctl, set_tid_address},
@@ -18,6 +20,8 @@ pub(crate) mod wali_specific;
 
 impl RunCommand {
     pub(crate) fn link_wali_host_functions(&self, linker: &mut Linker<WaliCtx>) -> Result<()> {
+        debug!("linking host functions");
+
         // wali-specific
         linker.func_wrap("wali", "__call_ctors", call_ctors)?;
         linker.func_wrap("wali", "__call_dtors", call_dtors)?;

@@ -5,13 +5,15 @@ use anyhow::Result;
 use libc::SYS_set_tid_address;
 use wasmtime::Caller;
 
+use tracing::info;
+
 use crate::commands::run::wali::{
     memory::{module_memory, WasmAddress},
     WaliCtx,
 };
 
 pub(super) fn set_tid_address(mut caller: Caller<'_, WaliCtx>, ptr_wasm: i32) -> i64 {
-    println!("module has executed the 'set_tid_address' host function");
+    info!("module has executed the 'set_tid_address' host function");
     let ptr_wasm = WasmAddress::new(ptr_wasm, &module_memory(&mut caller));
     match set_tid_address_impl(caller, ptr_wasm) {
         Ok(r) => r,
@@ -30,6 +32,7 @@ fn set_tid_address_impl(mut caller: Caller<'_, WaliCtx>, ptr_wasm: WasmAddress) 
 }
 
 pub(super) fn ioctl(mut caller: Caller<'_, WaliCtx>, a1: i32, a2: i32, a3: i32) -> i64 {
+    info!("module has executed the 'ioctl' host function");
     let ptr_wasm = WasmAddress::new(a3, &module_memory(&mut caller));
     ioctl_impl(caller, a1, a2, ptr_wasm)
 }

@@ -27,3 +27,11 @@ To run the module with Wasmtime, run
 ```
 
 (we trap for unknown imports for now, since a large fraction of the host function required by WALI is not there yet).
+
+## Logging
+
+We are using the tracing-based logging infrastructure of Wasmtime for the logging within the Wali code. To enable logging of messages of the `wali` module and its submodules, set the corresponding environment variable when running the run command like so:
+
+```
+WASMTIME_LOG=wasmtime_cli::commands::run::wali=[info|debug|...] [run_command]
+```

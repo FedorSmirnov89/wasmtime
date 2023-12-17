@@ -18,6 +18,8 @@ use wasmtime_wasi::maybe_exit_on_error;
 use wasmtime_wasi::preview2;
 use wasmtime_wasi::sync::{ambient_authority, Dir, TcpListener, WasiCtxBuilder};
 
+use tracing::info;
+
 #[cfg(feature = "wasi-nn")]
 use wasmtime_wasi_nn::WasiNnCtx;
 
@@ -124,8 +126,8 @@ impl RunCommand {
     /// Executes the command.
     pub fn execute(mut self) -> Result<()> {
         match &self.wali {
-            true => println!("running the module as a WALI module"),
-            false => println!("running the module as a WASI module"),
+            true => info!("running the module as a WALI module"),
+            false => info!("running the module as a WASI module"),
         }
 
         self.run.common.init_logging()?;
