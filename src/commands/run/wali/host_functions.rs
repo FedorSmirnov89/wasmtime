@@ -7,9 +7,8 @@ use crate::commands::{
     run::wali::host_functions::{
         arguments::{cl_copy_argv, cl_get_argc, cl_get_argv_len},
         sys_calls::{
-            syscall_access, syscall_brk, syscall_clock_gettime, syscall_clock_nanosleep,
-            syscall_mmap, syscall_mprotect, syscall_munmap, syscall_nanosleep, syscall_open,
-            syscall_uname, syscall_write, syscall_writev,
+            access, brk, clock_gettime, clock_nanosleep, mprotect, nanosleep, open, syscall_mmap,
+            syscall_munmap, syscall_writev, uname, write,
         },
     },
     RunCommand,
@@ -47,19 +46,19 @@ impl RunCommand {
         linker.func_wrap("wali", "__cl_copy_argv", cl_copy_argv)?;
 
         // sys calls
-        linker.func_wrap("wali", "SYS_access", syscall_access)?;
-        linker.func_wrap("wali", "SYS_brk", syscall_brk)?;
-        linker.func_wrap("wali", "SYS_clock_gettime", syscall_clock_gettime)?;
-        linker.func_wrap("wali", "SYS_clock_nanosleep", syscall_clock_nanosleep)?;
+        linker.func_wrap("wali", "SYS_access", access)?;
+        linker.func_wrap("wali", "SYS_brk", brk)?;
+        linker.func_wrap("wali", "SYS_clock_gettime", clock_gettime)?;
+        linker.func_wrap("wali", "SYS_clock_nanosleep", clock_nanosleep)?;
         linker.func_wrap("wali", "SYS_ioctl", ioctl)?;
         linker.func_wrap("wali", "SYS_mmap", syscall_mmap)?;
-        linker.func_wrap("wali", "SYS_mprotect", syscall_mprotect)?;
+        linker.func_wrap("wali", "SYS_mprotect", mprotect)?;
         linker.func_wrap("wali", "SYS_munmap", syscall_munmap)?;
-        linker.func_wrap("wali", "SYS_nanosleep", syscall_nanosleep)?;
-        linker.func_wrap("wali", "SYS_open", syscall_open)?;
+        linker.func_wrap("wali", "SYS_nanosleep", nanosleep)?;
+        linker.func_wrap("wali", "SYS_open", open)?;
         linker.func_wrap("wali", "SYS_set_tid_address", set_tid_address)?;
-        linker.func_wrap("wali", "SYS_uname", syscall_uname)?;
-        linker.func_wrap("wali", "SYS_write", syscall_write)?;
+        linker.func_wrap("wali", "SYS_uname", uname)?;
+        linker.func_wrap("wali", "SYS_write", write)?;
         linker.func_wrap("wali", "SYS_writev", syscall_writev)?;
 
         Ok(())
