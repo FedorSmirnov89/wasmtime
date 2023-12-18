@@ -70,14 +70,25 @@ macro_rules! syscall_fwd {
 
 syscall_fwd_prelude!();
 
+syscall_fwd! {name: "read", num: 0, args: [a1, m2, a3]}
 syscall_fwd! {name: "write", num: 1, args: [a1, m2, a3]}
+syscall_fwd! {name: "close", num: 3, args: [a1]}
 syscall_fwd! {name: "mprotect", num: 10, args: [m1, a2, a3]}
 syscall_fwd! {name: "ioctl", num: 16, args: [a1, a2, m3]}
 syscall_fwd! {name: "nanosleep", num: 35, args: [m1, m2]}
+syscall_fwd! {name: "socket", num: 41, args: [a1, a2, a3]}
+syscall_fwd! {name: "connect", num: 42, args: [a1, m2, a3]}
+syscall_fwd! {name: "accept", num: 43, args: [a1, m2, m3]}
+syscall_fwd! {name: "sendto", num: 44, args: [a1, m2, a3, a4, m5, a6]}
+syscall_fwd! {name: "shutdown", num: 48, args: [a1, a2]}
+syscall_fwd! {name: "bind", num: 49, args: [a1, m2, a3]}
+syscall_fwd! {name: "listen", num: 50, args: [a1, a2]}
+syscall_fwd! {name: "setsockopt", num: 54, args: [a1, a2, a3, m4, a5]}
 syscall_fwd! {name: "uname", num: 63, args: [m1]}
 syscall_fwd! {name: "set_tid_address", num: 218, args: [m1]}
 syscall_fwd! {name: "clock_gettime", num: 228, args: [a1, m2]}
 syscall_fwd! {name: "clock_nanosleep", num: 230, args: [a1, a2, m3, m4]}
+syscall_fwd! {name: "utimensat", num: 280, args: [a1, m2, m3, a4]}
 
 // Architecture-specific syscalls (currently only for x86_64)
 #[cfg(target_arch = "x86_64")]

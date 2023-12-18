@@ -58,67 +58,68 @@ Currently, the implementation focus is on implementing the functionality necessa
 - base.wasm
 - clock_gettime.wasm
 - clock_nanosleep.wasm
+- epoll.wasm
+- fileops.wasm
+- fn_ptr.wasm
+- fn_ptr_simple.wasm
+- getenv.wasm 
+- malloc.wasm
 - math.wasm
 - mmap.wasm
 - mprotect.wasm
+- msghdr.wasm
+- noflock.wasm
+- platform.wasm 
 - printf.wasm
 - sizes.wasm
+- socket_client.wasm
+- socket_server.wasm
 - uname.wasm
 - va_args.wasm
 - write.wasm
 - wprintf.wasm
 
-### Output seems to be okay, but 1 as exit status
-- mmap2.wasm
-- nanosleep.wasm
+
+### Output seems to be okay, but exiting with sth other than 0
+- mmap2.wasm -- exit status 1
+- nanosleep.wasm -- exit status 1
 
 ### Not Yet Implemented/Tested
-- access_thread.wasm
+- access_thread.wasm -- needs rt_sigprocmask
 - alarm.wasm -- needs fork
-- alarm_signal.wasm
-- dup.wasm
-- epoll.wasm
-- execve.wasm
+- alarm_signal.wasm -- needs rt_sigaction
+- dup.wasm -- needs dup
+- execve.wasm -- needs fork
 - exit.wasm -- needs sys_exit_group
-- fcntl.wasm
-- fileops.wasm
-- flock.wasm
-- fn_ptr.wasm
-- fn_ptr_simple.wasm
-- fork.wasm
-- fstat.wasm
-- fstat2.wasm
-- fstatfs.wasm
-- futex_stop.wasm
-- getdirents.wasm
-- getenv.wasm
-- infinite_loop.wasm
-- kill.wasm
-- loop.wasm
-- lseek.wasm
-- lstat.wasm
-- malloc.wasm
-- msghdr.wasm
-- noflock.wasm
-- pipe.wasm
-- platform.wasm
-- raise.wasm
-- rawfork.wasm
-- safe_thread.wasm
-- setpgid.wasm
-- sigaltstack.wasm
-- signal.wasm
-- signal2.wasm
-- signal3.wasm
-- sigprocmask.wasm
-- sigsuspend.wasm
-- simple_thread.wasm
-- sleep_kill.wasm
-- socket_client.wasm
-- socket_server.wasm
-- stat.wasm
-- statall.wasm
-- statfs.wasm
-- streamin.wasm
-- thread.wasm
-- utime.wasm
+- fcntl.wasm -- needs fcntl
+- flock.wasm -- needs flock
+- fork.wasm -- needs rt_sigprocmask
+- fstat.wasm -- needs exit_group
+- fstat2.wasm -- needs fstat
+- fstatfs.wasm -- needs fstatfs
+- futex_stop.wasm -- needs rt_sigaction
+- getdirents.wasm -- needs getdents64
+- infinite_loop.wasm -- seems infinite alright :) not sure what the intended behavior is
+- kill.wasm -- needs kill
+- loop.wasm -- needs rt_sigaction
+- lseek.wasm -- needs lseek
+- lstat.wasm -- needs lstat
+- pipe.wasm -- needs pipe
+- raise.wasm -- needs rt_sigaction
+- rawfork.wasm -- needs fork
+- safe_thread.wasm -- needs rt_sigprocmask
+- setpgid.wasm -- needs setpgid
+- sigaltstack.wasm -- needs sigaltstack
+- signal.wasm -- needs rt_sigaction
+- signal2.wasm -- needs rt_sigaction
+- signal3.wasm -- needs rt_sigaction
+- sigprocmask.wasm -- needs fork
+- sigsuspend.wasm -- needs rt_sigaction
+- simple_thread.wasm -- needs rt_sigprocmask
+- sleep_kill.wasm -- (probably) needs kill
+- stat.wasm -- needs stat
+- statall.wasm -- needs getcwd
+- statfs.wasm -- needs statfs
+- streamin.wasm -- not sure what this one is missing; check on it later
+- thread.wasm -- needs rt_sigprocmask
+- utime.wasm -- needs sys_exit_group

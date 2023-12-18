@@ -1,11 +1,15 @@
-use std::process::{Command, Stdio};
+use std::process::{Command, ExitStatus, Stdio};
 
 const PATH_PREFIX: &'static str = include_str!("../local/path_prefix.txt");
 
 fn wali_test(test_name: &'static str) {
-    let module_arg = format!("{prefix}/{test_name}.wasm", prefix = PATH_PREFIX);
+    let exit_status = run_wali_module(test_name);
+    assert!(exit_status.success());
+}
 
-    let exit_status = Command::new("./target/debug/wasmtime")
+fn run_wali_module(module_name: &'static str) -> ExitStatus {
+    let module_arg = format!("{prefix}/{module_name}.wasm", prefix = PATH_PREFIX);
+    Command::new("./target/debug/wasmtime")
         .arg("run")
         .arg("--wali")
         .arg("-W")
@@ -16,9 +20,20 @@ fn wali_test(test_name: &'static str) {
         .spawn()
         .expect("failed to spawn process")
         .wait()
-        .expect("failed to wait on child");
+        .expect("failed to wait on child")
+}
 
-    assert!(exit_status.success());
+#[test]
+fn socket() {
+    let server_join = std::thread::spawn(|| run_wali_module("socket_server"));
+
+    let client_join = std::thread::spawn(|| run_wali_module("socket_client"));
+
+    let server_exit_status = server_join.join().unwrap();
+    let client_exit_status = client_join.join().unwrap();
+
+    assert!(server_exit_status.success());
+    assert!(client_exit_status.success());
 }
 
 macro_rules! wali_test {
@@ -48,3 +63,13 @@ wali_test!("uname");
 wali_test!("va_args");
 wali_test!("write");
 wali_test!("wprintf");
+wali_test!("epoll");
+wali_test!("fn_ptr");
+wali_test!("fn_ptr_simple");
+wali_test!("getenv");
+wali_test!("malloc");
+wali_test!("msghdr");
+wali_test!("platform");
+wali_test!("fileops");
+wali_test!("noflock");
+//wali_test!("socket_client"); // Exit status is 255
