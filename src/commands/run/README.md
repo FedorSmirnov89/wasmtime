@@ -36,11 +36,23 @@ We are using the tracing-based logging infrastructure of Wasmtime for the loggin
 WASMTIME_LOG=wasmtime_cli::commands::run::wali=[error|warn|info|debug|trace] [run_command]
 ```
 
+## Testing
+
+### Syscall tests
+
+The currently supported syscalls are tested with unit tests (although they are implemented more as integration tests (in an ugly way assuming that the runtime is compiled when the tests are running) -- this will be implemented properly when the wali stuff is moved into an own crate) within the `commands::run::wali` module. Each of these tests uses the wali-extended runtime to run a test WASM module from the [Wali test suite](https://github.com/arjunr2/WALI/tree/main/tests). 
+
+To run the tests:
+
+1. Check out the Wali repository somewhere on your system and follow the steps in its readme to build the test modules
+2. Create the file `path_prefix.txt` in the `local` folder of this directory (`local` is in the gitignore, so you will hava to create the directory). The file should contain the file path prefix of the tests (For instance, if the test WASM files are in the `/home/wali/WALI/tests/wasm` directory on your system, this should be the exact content of the file -- no formatting, no single/double quotes -- the content of this file is read in as a string during the compilation of the tests).
+3. Run the wali tests by running `cargo test --lib commands::run::wali`
+
 ## Implementation Progress
 
 Currently, the implementation focus is on implementing the functionality necessary to pass the test suite defined in the [Wali repo](https://github.com/arjunr2/WALI/tree/main/tests). The progress in this is detailed below:
 
-### Passing Tests
+### Passing (automated) Tests
 - access.wasm
 - args.wasm
 - base.wasm
@@ -48,9 +60,7 @@ Currently, the implementation focus is on implementing the functionality necessa
 - clock_nanosleep.wasm
 - math.wasm
 - mmap.wasm
-- mmap2.wasm
 - mprotect.wasm
-- nanosleep.wasm
 - printf.wasm
 - sizes.wasm
 - uname.wasm
@@ -58,7 +68,11 @@ Currently, the implementation focus is on implementing the functionality necessa
 - write.wasm
 - wprintf.wasm
 
-### Not Passing Tests
+### Output seems to be okay, but 1 as exit status
+- mmap2.wasm
+- nanosleep.wasm
+
+### Not Yet Implemented/Tested
 - access_thread.wasm
 - alarm.wasm -- needs fork
 - alarm_signal.wasm

@@ -8,3 +8,6 @@ mod run;
 mod store;
 
 pub(crate) use store::WaliCtx;
+
+#[cfg(test)]
+mod test;
