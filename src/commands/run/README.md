@@ -60,9 +60,12 @@ Currently, the implementation focus is on implementing the functionality necessa
 - clock_nanosleep.wasm
 - epoll.wasm
 - fileops.wasm
+- flock.wasm
 - fn_ptr.wasm
 - fn_ptr_simple.wasm
 - getenv.wasm 
+- kill.wasm
+- lseek.wasm
 - malloc.wasm
 - math.wasm
 - mmap.wasm
@@ -71,6 +74,7 @@ Currently, the implementation focus is on implementing the functionality necessa
 - noflock.wasm
 - platform.wasm 
 - printf.wasm
+- setpgid.wasm
 - sizes.wasm
 - socket_client.wasm
 - socket_server.wasm
@@ -83,6 +87,7 @@ Currently, the implementation focus is on implementing the functionality necessa
 ### Output seems to be okay, but exiting with sth other than 0
 - mmap2.wasm -- exit status 1
 - nanosleep.wasm -- exit status 1
+- getdirents.wasm -- missing file
 
 ### Not Yet Implemented/Tested
 - access_thread.wasm -- needs rt_sigprocmask
@@ -92,23 +97,18 @@ Currently, the implementation focus is on implementing the functionality necessa
 - execve.wasm -- needs fork
 - exit.wasm -- needs sys_exit_group
 - fcntl.wasm -- needs fcntl
-- flock.wasm -- needs flock
 - fork.wasm -- needs rt_sigprocmask
 - fstat.wasm -- needs exit_group
 - fstat2.wasm -- needs fstat
 - fstatfs.wasm -- needs fstatfs
 - futex_stop.wasm -- needs rt_sigaction
-- getdirents.wasm -- needs getdents64
 - infinite_loop.wasm -- seems infinite alright :) not sure what the intended behavior is
-- kill.wasm -- needs kill
 - loop.wasm -- needs rt_sigaction
-- lseek.wasm -- needs lseek
-- lstat.wasm -- needs lstat
-- pipe.wasm -- needs pipe
+- lstat.wasm -- needs exit_group
+- pipe.wasm -- needs fork
 - raise.wasm -- needs rt_sigaction
 - rawfork.wasm -- needs fork
 - safe_thread.wasm -- needs rt_sigprocmask
-- setpgid.wasm -- needs setpgid
 - sigaltstack.wasm -- needs sigaltstack
 - signal.wasm -- needs rt_sigaction
 - signal2.wasm -- needs rt_sigaction
@@ -116,8 +116,8 @@ Currently, the implementation focus is on implementing the functionality necessa
 - sigprocmask.wasm -- needs fork
 - sigsuspend.wasm -- needs rt_sigaction
 - simple_thread.wasm -- needs rt_sigprocmask
-- sleep_kill.wasm -- (probably) needs kill
-- stat.wasm -- needs stat
+- sleep_kill.wasm -- hangs after calling nanosleep (same when run with iwasm)
+- stat.wasm -- needs exit group
 - statall.wasm -- needs getcwd
 - statfs.wasm -- needs statfs
 - streamin.wasm -- not sure what this one is missing; check on it later

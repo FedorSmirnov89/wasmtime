@@ -38,6 +38,7 @@ macro_rules! syscall_fwd_prelude {
 /// to the system call to the host OS.
 ///
 macro_rules! syscall_fwd {
+    // defaulte case -- all arguments are i32
     (name: $name: literal, num: $num: literal, args: [$($arg: ident),+]) => {
         paste::item!{
             pub(crate) fn [<$name>](caller: Caller<'_, WaliCtx>, $($arg: i32),+) -> i64 {
@@ -66,6 +67,37 @@ macro_rules! syscall_fwd {
             }
         }
     };
+
+    // extra case where the types of the arguments are explicitly specified
+    (name: $name: literal, num: $num: literal, args: [$($arg: ident: $arg_type: ty),+]) => {
+        paste::item!{
+            pub(crate) fn [<$name>](caller: Caller<'_, WaliCtx>, $($arg: $arg_type),+) -> i64 {
+                info!("module has executed the '{}' host function.", $name);
+                match [<$name _impl>](caller, $($arg),+) {
+                    Ok(r) => r,
+                    Err(e) => {
+                        error!("error when calling '{}': {e}", $name);
+                        -1
+                    }
+                }
+            }
+
+            #[allow(trivial_numeric_casts)]
+            fn [<$name _impl>](mut caller: Caller<'_, WaliCtx>, $($arg: $arg_type),+) -> Result<i64>{
+
+                let ($($arg),+) = ($(
+                    if stringify!($arg).starts_with("m"){
+                        WasmAddress::new($arg as i32, &caller.as_memory()).to_host_address(&caller.as_memory()).into()
+                    }else{
+                        $arg as libc::c_long
+                    }
+                ),+);
+
+                let sys_call_result = unsafe {libc::syscall($num, $($arg),+)};
+                Ok(sys_call_result)
+            }
+        }
+    };
 }
 
 syscall_fwd_prelude!();
@@ -84,11 +116,17 @@ syscall_fwd! {name: "shutdown", num: 48, args: [a1, a2]}
 syscall_fwd! {name: "bind", num: 49, args: [a1, m2, a3]}
 syscall_fwd! {name: "listen", num: 50, args: [a1, a2]}
 syscall_fwd! {name: "setsockopt", num: 54, args: [a1, a2, a3, m4, a5]}
+syscall_fwd! {name: "kill", num: 62, args: [a1, a2]}
 syscall_fwd! {name: "uname", num: 63, args: [m1]}
+syscall_fwd! {name: "flock", num: 73, args: [a1, a2]}
+syscall_fwd! {name: "setpgid", num: 109, args: [a1, a2]}
+syscall_fwd! {name: "getdents64", num: 217, args: [a1, m2, a3]}
 syscall_fwd! {name: "set_tid_address", num: 218, args: [m1]}
 syscall_fwd! {name: "clock_gettime", num: 228, args: [a1, m2]}
 syscall_fwd! {name: "clock_nanosleep", num: 230, args: [a1, a2, m3, m4]}
 syscall_fwd! {name: "utimensat", num: 280, args: [a1, m2, m3, a4]}
+
+syscall_fwd! {name: "lseek", num: 8, args: [a1: i32, a2: i64, a3: i32]}
 
 // Architecture-specific syscalls (currently only for x86_64)
 #[cfg(target_arch = "x86_64")]
@@ -98,7 +136,10 @@ mod arch_specific_x86 {
     syscall_fwd_prelude!();
 
     syscall_fwd! {name: "open", num: 2, args: [m1, a2, a3]}
+    syscall_fwd! {name: "stat", num: 4, args: [m1, m2]}
+    syscall_fwd! {name: "lstat", num: 6, args: [m1, m2]}
     syscall_fwd! {name: "access", num: 21, args: [m1, a2]}
+    syscall_fwd! {name: "pipe", num: 22, args: [m1]}
 }
 
 pub(crate) use arch_specific_x86::*;

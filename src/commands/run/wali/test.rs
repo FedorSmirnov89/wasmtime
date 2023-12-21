@@ -27,6 +27,7 @@ fn run_wali_module(module_name: &'static str) -> ExitStatus {
 fn socket() {
     let server_join = std::thread::spawn(|| run_wali_module("socket_server"));
 
+    std::thread::sleep(std::time::Duration::from_millis(500));
     let client_join = std::thread::spawn(|| run_wali_module("socket_client"));
 
     let server_exit_status = server_join.join().unwrap();
@@ -72,4 +73,8 @@ wali_test!("msghdr");
 wali_test!("platform");
 wali_test!("fileops");
 wali_test!("noflock");
-//wali_test!("socket_client"); // Exit status is 255
+wali_test!("flock");
+wali_test!("lseek");
+wali_test!("setpgid");
+// wali_test!("getdents64"); // does not find the file
+wali_test!("kill");
