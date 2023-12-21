@@ -61,6 +61,7 @@ Currently, the implementation focus is on implementing the functionality necessa
 - clock_nanosleep.wasm
 - dup.wasm
 - epoll.wasm
+- execve.wasm
 - fcntl.wasm
 - fileops.wasm
 - flock.wasm
@@ -99,7 +100,6 @@ Currently, the implementation focus is on implementing the functionality necessa
 ### Not Yet Implemented/Tested
 - access_thread.wasm -- needs rt_sigprocmask
 - alarm_signal.wasm -- needs rt_sigaction
-- execve.wasm -- needs fork
 - exit.wasm -- needs sys_exit_group
 - fstat.wasm -- needs exit_group
 - fstat2.wasm -- needs fstat

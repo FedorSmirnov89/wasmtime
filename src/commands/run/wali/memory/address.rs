@@ -88,4 +88,8 @@ impl HostAddress {
     pub(crate) fn as_usize(self) -> usize {
         self.0
     }
+
+    pub(crate) fn as_i32_ptr(self) -> *mut i32 {
+        self.0 as *mut i32
+    }
 }

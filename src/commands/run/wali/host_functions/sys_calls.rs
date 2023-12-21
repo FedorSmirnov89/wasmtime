@@ -3,11 +3,13 @@
 
 use tracing::info;
 
+mod execve;
 mod fwd;
 mod mmap;
 mod munmap;
 mod writev;
 
+pub(crate) use execve::execve;
 pub(crate) use fwd::*;
 pub(crate) use mmap::syscall_mmap;
 pub(crate) use munmap::syscall_munmap;

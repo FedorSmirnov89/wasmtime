@@ -85,3 +85,4 @@ wali_test!("sigprocmask");
 wali_test!("fork");
 wali_test!("dup");
 wali_test!("fcntl");
+wali_test!("execve");
