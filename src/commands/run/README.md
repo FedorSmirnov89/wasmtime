@@ -54,15 +54,19 @@ Currently, the implementation focus is on implementing the functionality necessa
 
 ### Passing (automated) Tests
 - access.wasm
+- alarm.wasm
 - args.wasm
 - base.wasm
 - clock_gettime.wasm
 - clock_nanosleep.wasm
+- dup.wasm
 - epoll.wasm
+- fcntl.wasm
 - fileops.wasm
 - flock.wasm
 - fn_ptr.wasm
 - fn_ptr_simple.wasm
+- fork.wasm
 - getenv.wasm 
 - kill.wasm
 - lseek.wasm
@@ -72,9 +76,12 @@ Currently, the implementation focus is on implementing the functionality necessa
 - mprotect.wasm
 - msghdr.wasm
 - noflock.wasm
+- pipe.wasm
 - platform.wasm 
 - printf.wasm
+- rawfork.wasm
 - setpgid.wasm
+- sigprocmask.wasm
 - sizes.wasm
 - socket_client.wasm
 - socket_server.wasm
@@ -91,13 +98,9 @@ Currently, the implementation focus is on implementing the functionality necessa
 
 ### Not Yet Implemented/Tested
 - access_thread.wasm -- needs rt_sigprocmask
-- alarm.wasm -- needs fork
 - alarm_signal.wasm -- needs rt_sigaction
-- dup.wasm -- needs dup
 - execve.wasm -- needs fork
 - exit.wasm -- needs sys_exit_group
-- fcntl.wasm -- needs fcntl
-- fork.wasm -- needs rt_sigprocmask
 - fstat.wasm -- needs exit_group
 - fstat2.wasm -- needs fstat
 - fstatfs.wasm -- needs fstatfs
@@ -105,15 +108,12 @@ Currently, the implementation focus is on implementing the functionality necessa
 - infinite_loop.wasm -- seems infinite alright :) not sure what the intended behavior is
 - loop.wasm -- needs rt_sigaction
 - lstat.wasm -- needs exit_group
-- pipe.wasm -- needs fork
 - raise.wasm -- needs rt_sigaction
-- rawfork.wasm -- needs fork
 - safe_thread.wasm -- needs rt_sigprocmask
 - sigaltstack.wasm -- needs sigaltstack
 - signal.wasm -- needs rt_sigaction
 - signal2.wasm -- needs rt_sigaction
 - signal3.wasm -- needs rt_sigaction
-- sigprocmask.wasm -- needs fork
 - sigsuspend.wasm -- needs rt_sigaction
 - simple_thread.wasm -- needs rt_sigprocmask
 - sleep_kill.wasm -- hangs after calling nanosleep (same when run with iwasm)

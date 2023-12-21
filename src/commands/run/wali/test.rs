@@ -78,3 +78,10 @@ wali_test!("lseek");
 wali_test!("setpgid");
 // wali_test!("getdents64"); // does not find the file
 wali_test!("kill");
+wali_test!("alarm");
+wali_test!("pipe");
+wali_test!("rawfork");
+wali_test!("sigprocmask");
+wali_test!("fork");
+wali_test!("dup");
+wali_test!("fcntl");

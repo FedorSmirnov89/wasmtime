@@ -7,10 +7,11 @@ use crate::commands::{
     run::wali::host_functions::{
         arguments::{cl_copy_argv, cl_get_argc, cl_get_argv_len},
         sys_calls::{
-            accept, access, bind, brk, clock_gettime, clock_nanosleep, close, connect, flock,
-            getdents64, getpid, kill, listen, lseek, lstat, mprotect, nanosleep, open, pipe, read,
-            sendto, setpgid, setsockopt, shutdown, socket, stat, syscall_mmap, syscall_munmap,
-            syscall_writev, uname, utimensat, write,
+            accept, access, alarm, bind, brk, clock_gettime, clock_nanosleep, close, connect, dup,
+            dup2, dup3, fcntl, flock, fork, getdents64, getpid, gettid, kill, listen, lseek, lstat,
+            mprotect, nanosleep, open, pipe, read, rt_sigprocmask, sendto, setpgid, setsockopt,
+            shutdown, socket, stat, syscall_mmap, syscall_munmap, syscall_writev, uname, utimensat,
+            write,
         },
     },
     RunCommand,
@@ -48,18 +49,24 @@ impl RunCommand {
         linker.func_wrap("wali", "__cl_copy_argv", cl_copy_argv)?;
 
         // sys calls
-        linker.func_wrap("wali", "SYS_setpgid", setpgid)?;
         linker.func_wrap("wali", "SYS_accept", accept)?;
         linker.func_wrap("wali", "SYS_access", access)?;
+        linker.func_wrap("wali", "SYS_alarm", alarm)?;
         linker.func_wrap("wali", "SYS_bind", bind)?;
         linker.func_wrap("wali", "SYS_brk", brk)?;
         linker.func_wrap("wali", "SYS_clock_gettime", clock_gettime)?;
         linker.func_wrap("wali", "SYS_clock_nanosleep", clock_nanosleep)?;
         linker.func_wrap("wali", "SYS_close", close)?;
         linker.func_wrap("wali", "SYS_connect", connect)?;
+        linker.func_wrap("wali", "SYS_dup", dup)?;
+        linker.func_wrap("wali", "SYS_dup2", dup2)?;
+        linker.func_wrap("wali", "SYS_dup3", dup3)?;
+        linker.func_wrap("wali", "SYS_fcntl", fcntl)?;
         linker.func_wrap("wali", "SYS_flock", flock)?;
+        linker.func_wrap("wali", "SYS_fork", fork)?;
         linker.func_wrap("wali", "SYS_getdents64", getdents64)?;
         linker.func_wrap("wali", "SYS_getpid", getpid)?;
+        linker.func_wrap("wali", "SYS_gettid", gettid)?;
         linker.func_wrap("wali", "SYS_ioctl", ioctl)?;
         linker.func_wrap("wali", "SYS_kill", kill)?;
         linker.func_wrap("wali", "SYS_listen", listen)?;
@@ -67,7 +74,9 @@ impl RunCommand {
         linker.func_wrap("wali", "SYS_lstat", lstat)?;
         linker.func_wrap("wali", "SYS_pipe", pipe)?;
         linker.func_wrap("wali", "SYS_read", read)?;
+        linker.func_wrap("wali", "SYS_rt_sigprocmask", rt_sigprocmask)?;
         linker.func_wrap("wali", "SYS_sendto", sendto)?;
+        linker.func_wrap("wali", "SYS_setpgid", setpgid)?;
         linker.func_wrap("wali", "SYS_setsockopt", setsockopt)?;
         linker.func_wrap("wali", "SYS_shutdown", shutdown)?;
         linker.func_wrap("wali", "SYS_socket", socket)?;
