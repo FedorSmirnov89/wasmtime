@@ -8,10 +8,10 @@ use crate::commands::{
         arguments::{cl_copy_argv, cl_get_argc, cl_get_argv_len},
         sys_calls::{
             accept, access, alarm, bind, brk, clock_gettime, clock_nanosleep, close, connect, dup,
-            dup2, dup3, execve, fcntl, flock, fork, getdents64, getpid, gettid, kill, listen,
-            lseek, lstat, mprotect, nanosleep, open, pipe, read, rt_sigprocmask, sendto, setpgid,
-            setsockopt, shutdown, socket, stat, syscall_mmap, syscall_munmap, syscall_writev,
-            uname, utimensat, write,
+            dup2, dup3, execve, exit_group, fcntl, flock, fork, fstat, fstatfs, getdents64, getpid,
+            gettid, kill, listen, lseek, lstat, mprotect, nanosleep, open, pipe, read,
+            rt_sigprocmask, sendto, setpgid, setsockopt, shutdown, socket, stat, syscall_mmap,
+            syscall_munmap, syscall_writev, uname, utimensat, write,
         },
     },
     RunCommand,
@@ -62,9 +62,12 @@ impl RunCommand {
         linker.func_wrap("wali", "SYS_dup2", dup2)?;
         linker.func_wrap("wali", "SYS_dup3", dup3)?;
         linker.func_wrap("wali", "SYS_execve", execve)?;
+        linker.func_wrap("wali", "SYS_exit_group", exit_group)?;
         linker.func_wrap("wali", "SYS_fcntl", fcntl)?;
         linker.func_wrap("wali", "SYS_flock", flock)?;
         linker.func_wrap("wali", "SYS_fork", fork)?;
+        linker.func_wrap("wali", "SYS_fstat", fstat)?;
+        linker.func_wrap("wali", "SYS_fstatfs", fstatfs)?;
         linker.func_wrap("wali", "SYS_getdents64", getdents64)?;
         linker.func_wrap("wali", "SYS_getpid", getpid)?;
         linker.func_wrap("wali", "SYS_gettid", gettid)?;

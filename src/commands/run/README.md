@@ -96,30 +96,30 @@ Currently, the implementation focus is on implementing the functionality necessa
 - mmap2.wasm -- exit status 1
 - nanosleep.wasm -- exit status 1
 - getdirents.wasm -- missing file
+- fstat.wasm -- needs proper exit group management
+- fstat2.wasm -- needs proper exit group management
+- fstatfs.wasm -- needs proper exit group management
 
 ### Not Yet Implemented/Tested
-- access_thread.wasm -- needs rt_sigprocmask
+- access_thread.wasm -- needs wasm_thread_spawn
 - alarm_signal.wasm -- needs rt_sigaction
 - exit.wasm -- needs sys_exit_group
-- fstat.wasm -- needs exit_group
-- fstat2.wasm -- needs fstat
-- fstatfs.wasm -- needs fstatfs
 - futex_stop.wasm -- needs rt_sigaction
 - infinite_loop.wasm -- seems infinite alright :) not sure what the intended behavior is
 - loop.wasm -- needs rt_sigaction
 - lstat.wasm -- needs exit_group
 - raise.wasm -- needs rt_sigaction
-- safe_thread.wasm -- needs rt_sigprocmask
+- safe_thread.wasm -- needs wasm_thread_spawn
 - sigaltstack.wasm -- needs sigaltstack
 - signal.wasm -- needs rt_sigaction
 - signal2.wasm -- needs rt_sigaction
 - signal3.wasm -- needs rt_sigaction
 - sigsuspend.wasm -- needs rt_sigaction
-- simple_thread.wasm -- needs rt_sigprocmask
+- simple_thread.wasm -- needs wasm_thread_spawn
 - sleep_kill.wasm -- hangs after calling nanosleep (same when run with iwasm)
 - stat.wasm -- needs exit group
 - statall.wasm -- needs getcwd
 - statfs.wasm -- needs statfs
 - streamin.wasm -- not sure what this one is missing; check on it later
-- thread.wasm -- needs rt_sigprocmask
+- thread.wasm -- needs wasm_thread_spawn
 - utime.wasm -- needs sys_exit_group

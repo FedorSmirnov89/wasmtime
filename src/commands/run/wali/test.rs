@@ -86,3 +86,6 @@ wali_test!("fork");
 wali_test!("dup");
 wali_test!("fcntl");
 wali_test!("execve");
+// wali_test!("fstat"); // fails since no proper exit group implementation atm
+// wali_test!("fstat2"); // fails since no proper exit group implementation atm
+// wali_test!("fstatfs"); // fails since no proper exit group implementation atm
