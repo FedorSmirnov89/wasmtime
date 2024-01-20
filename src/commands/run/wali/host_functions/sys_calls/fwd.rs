@@ -134,6 +134,7 @@ syscall_fwd! {name: "flock", num: 73, args: [a1, a2]}
 syscall_fwd! {name: "setpgid", num: 109, args: [a1, a2]}
 syscall_fwd! {name: "fstatfs", num: 138, args: [a1, m2]}
 syscall_fwd! {name: "gettid", num: 186}
+syscall_fwd! {name: "futex", num: 202, args: [m1, a2, a3, m4, m5, a6]}
 syscall_fwd! {name: "getdents64", num: 217, args: [a1, m2, a3]}
 syscall_fwd! {name: "set_tid_address", num: 218, args: [m1]}
 syscall_fwd! {name: "clock_gettime", num: 228, args: [a1, m2]}
