@@ -16,6 +16,17 @@ After that, build the runtime to check that evth works:
 cargo b
 ```
 
+### Note on Linking
+
+During the build process, you may run out of memory, so that the OS will kill the `cargo build` process (this happened a lot on my machine). For me, using a different linker solved the problem. You can configure cargo to use `rust-lld` by adding the following to `.cargo/config`:
+
+```
+[target.x86_64-unkown-linux]
+linker = "rust-lld"
+```
+
+(you will have to use the appropriate target triple for your machine, you can look it up using `rustc --print cfg`)
+
 ## Running a module
 
 We will assume that you have a WASM module which was compiled against the WALI interaface. See the documentation in the [Wali Repository](https://github.com/arjunr2/WALI) for information about the compilation.
