@@ -207,9 +207,25 @@ impl RunCommand {
         linker: &mut Linker<WaliCtx>,
         main: &RunTarget,
     ) -> Result<(), anyhow::Error> {
-        let wali_ctx = WaliCtx::new(&self);
-        let mut store = Store::new(&engine, wali_ctx);
+        let module = match main {
+            RunTarget::Core(module) => module,
+            RunTarget::Component(_) => unreachable!("wali does not support components atm"),
+        };
+
         self.link_wali_host_functions(linker)?;
+        // The main module might be allowed to have unknown imports, which
+        // should be defined as traps:
+        if self.run.common.wasm.unknown_imports_trap == Some(true) {
+            #[cfg(feature = "cranelift")]
+            linker.define_unknown_imports_as_traps(module)?;
+            #[cfg(not(feature = "cranelift"))]
+            bail!("support for `unknown-imports-trap` disabled at compile time");
+        } else {
+            bail!("only working with trapping unknown imports atm");
+        }
+
+        let wali_ctx = WaliCtx::new(&self, module, linker)?;
+        let mut store = Store::new(&engine, wali_ctx);
 
         if !self.preloads.is_empty() {
             bail!("preloads are not supported with WALI modules");

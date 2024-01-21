@@ -21,23 +21,6 @@ impl RunCommand {
         linker: &mut Linker<WaliCtx>,
         module: &RunTarget,
     ) -> Result<()> {
-        // The main module might be allowed to have unknown imports, which
-        // should be defined as traps:
-        if self.run.common.wasm.unknown_imports_trap == Some(true) {
-            #[cfg(feature = "cranelift")]
-            linker.define_unknown_imports_as_traps(module.unwrap_core())?;
-            #[cfg(not(feature = "cranelift"))]
-            bail!("support for `unknown-imports-trap` disabled at compile time");
-        }
-
-        // ...or as default values.
-        if self.run.common.wasm.unknown_imports_default == Some(true) {
-            #[cfg(feature = "cranelift")]
-            linker.define_unknown_imports_as_default_values(module.unwrap_core())?;
-            #[cfg(not(feature = "cranelift"))]
-            bail!("support for `unknown-imports-trap` disabled at compile time");
-        }
-
         let result = {
             let module = module.unwrap_core();
             let instance = linker.instantiate(&mut *store, &module).context(format!(
