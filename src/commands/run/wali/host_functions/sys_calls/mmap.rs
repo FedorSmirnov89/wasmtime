@@ -1,15 +1,14 @@
+use std::sync::MutexGuard;
+
 use anyhow::{bail, Result};
 use libc::MAP_FIXED;
-use wasmtime::{Caller, SharedMemory};
+use wasmtime::Caller;
 
-use tracing::{debug, error, info};
+use tracing::{error, info, trace};
 
 use crate::commands::run::wali::{
-    memory::{
-        address::{HostAddress, WasmAddress},
-        AsMemory,
-    },
-    store::MMapData,
+    memory::address::{HostAddress, WasmAddress},
+    store::{InnerCtx, MMapData},
     WaliCtx,
 };
 
@@ -34,7 +33,7 @@ pub fn syscall_mmap(
 }
 
 fn syscall_mmap_impl(
-    mut caller: Caller<'_, WaliCtx>,
+    caller: Caller<'_, WaliCtx>,
     _a1: i32,
     length: i32,
     a3: i32,
@@ -42,21 +41,43 @@ fn syscall_mmap_impl(
     a5: i32,
     a6: i64,
 ) -> Result<i64> {
-    info!("Mmap length: {length:x}");
-    let memory = caller.as_memory();
-    let mut mmap_data = caller.data().lock_mmap_data()?;
-    let memory_size = memory.data_size();
-    mmap_data.init_base_size(memory_size);
+    let mut ctx_inner = caller.data().lock()?;
+    grow_wasm_memory(&mut ctx_inner, length)?;
+    let mmap_addr = call_mmap_syscall(&mut ctx_inner, length, a3, a4, a5, a6)?;
+    let wasm_addr = udpate_n_mmap_pages(&mut ctx_inner, mmap_addr, length)?;
+    Ok(wasm_addr.offset() as i64)
+}
 
-    let memory_start = WasmAddress::new(0, &memory)
-        .to_host_address(&memory)
+fn udpate_n_mmap_pages(
+    ctx_inner: &mut MutexGuard<'_, InnerCtx>,
+    mmap_addr: HostAddress,
+    length: i32,
+) -> Result<WasmAddress> {
+    let memory = ctx_inner.get_memory()?;
+    let host_addr: HostAddress = mmap_addr.into();
+    let wasm_addr = host_addr.to_wasm_address(memory)?;
+    let mmap_data = ctx_inner.mmap_data();
+    let n_mmap_pages = n_native_pages_for_size(&mmap_data, length as usize);
+
+    mmap_data.add_mmap_pages(n_mmap_pages);
+    trace!("overall num of mmap pages: {}", mmap_data.n_mmap_pages);
+    Ok(wasm_addr)
+}
+
+fn call_mmap_syscall(
+    ctx_inner: &mut MutexGuard<'_, InnerCtx>,
+    length: i32,
+    a3: i32,
+    a4: i32,
+    a5: i32,
+    a6: i64,
+) -> Result<HostAddress> {
+    let memory = ctx_inner.get_memory()?;
+    let memory_start = WasmAddress::new(0, memory)
+        .to_host_address(memory)
         .as_usize();
+    let mmap_data = ctx_inner.mmap_data();
     let aligned_address_memory_end = mmap_data.memory_end_aligned(memory_start)?;
-    let n_additional_wasm_pages = n_additional_wasm_pages(&memory, &mmap_data, length as usize)?;
-    debug!("Growing wasm memory by {} pages", n_additional_wasm_pages);
-    memory.grow(n_additional_wasm_pages as u64)?;
-
-    // do the actual mmap call
     let mmap_addr = unsafe {
         libc::mmap(
             aligned_address_memory_end as *mut libc::c_void,
@@ -72,25 +93,28 @@ fn syscall_mmap_impl(
         error!("mmap failed");
         bail!("mmap failed");
     }
-
-    // adjust the number of pages added via mmap
-    let n_mmap_pages = n_native_pages_for_size(&mmap_data, length as usize);
-    let host_addr: HostAddress = mmap_addr.into();
-    let wasm_addr = host_addr.to_wasm_address(&memory)?;
-
-    mmap_data.add_mmap_pages(n_mmap_pages);
-    debug!("overall num of mmap pages: {}", mmap_data.n_mmap_pages);
-
-    Ok(wasm_addr.offset() as i64)
+    Ok(mmap_addr.into())
 }
 
-fn n_additional_wasm_pages(
-    memory: &SharedMemory,
-    mmap_data: &MMapData,
-    size: usize,
-) -> Result<usize> {
-    let page_size_native = mmap_data.page_size_native;
+fn grow_wasm_memory(ctx_inner: &mut MutexGuard<'_, InnerCtx>, length: i32) -> Result<()> {
+    trace!("Mmap length: {length:x}");
+    let memory = ctx_inner.get_memory()?;
     let memory_size = memory.data_size();
+    let mmap_data = ctx_inner.mmap_data();
+
+    mmap_data.init_base_size(memory_size);
+
+    let n_additional_wasm_pages =
+        n_additional_wasm_pages(memory_size, &mmap_data, length as usize)?;
+    trace!("Growing wasm memory by {} pages", n_additional_wasm_pages);
+
+    let memory = ctx_inner.get_memory()?;
+    memory.grow(n_additional_wasm_pages as u64)?;
+    Ok(())
+}
+
+fn n_additional_wasm_pages(memory_size: usize, mmap_data: &MMapData, size: usize) -> Result<usize> {
+    let page_size_native = mmap_data.page_size_native;
     let base_memory_size = mmap_data.base_size()?;
     let mmap_memory_size = mmap_data.n_mmap_pages * page_size_native;
 
@@ -124,11 +148,11 @@ fn n_native_pages_for_size(mmap_data: &MMapData, size: usize) -> usize {
 }
 
 fn log_arguments(a1: i32, a2: i32, a3: i32, a4: i32, a5: i32, a6: i64) {
-    debug!("mmap arguments:");
-    debug!("a1: {a1}");
-    debug!("a2: {a2}");
-    debug!("a3: {a3}");
-    debug!("a4: {a4}");
-    debug!("a5: {a5}");
-    debug!("a6: {a6}");
+    trace!("mmap arguments:");
+    trace!("a1: {a1}");
+    trace!("a2: {a2}");
+    trace!("a3: {a3}");
+    trace!("a4: {a4}");
+    trace!("a5: {a5}");
+    trace!("a6: {a6}");
 }

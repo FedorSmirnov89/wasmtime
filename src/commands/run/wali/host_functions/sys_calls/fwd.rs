@@ -11,10 +11,7 @@ macro_rules! syscall_fwd_prelude {
     () => {
         use wasmtime::Caller;
 
-        use crate::commands::run::wali::{
-            memory::{address::WasmAddress, AsMemory},
-            WaliCtx,
-        };
+        use crate::commands::run::wali::{memory::address::WasmAddress, WaliCtx};
 
         use anyhow::Result;
 
@@ -38,11 +35,12 @@ macro_rules! syscall_fwd_prelude {
 /// to the system call to the host OS.
 ///
 macro_rules! syscall_fwd {
-    // defaulte case -- all arguments are i32
+    // default case -- all arguments are i32
     (name: $name: literal, num: $num: literal, args: [$($arg: ident),+]) => {
         paste::item!{
             pub(crate) fn [<$name>](caller: Caller<'_, WaliCtx>, $($arg: i32),+) -> i64 {
-                info!("module has executed the '{}' host function.", $name);
+                let tid = unsafe{libc::pthread_self()};
+                info!("module has executed the '{}' host function from thread {}.", $name, tid);
                 match [<$name _impl>](caller, $($arg),+) {
                     Ok(r) => r,
                     Err(e) => {
@@ -52,11 +50,13 @@ macro_rules! syscall_fwd {
                 }
             }
 
-            fn [<$name _impl>](mut caller: Caller<'_, WaliCtx>, $($arg: i32),+) -> Result<i64>{
+            fn [<$name _impl>](caller: Caller<'_, WaliCtx>, $($arg: i32),+) -> Result<i64>{
 
                 let ($($arg),+) = ($(
                     if stringify!($arg).starts_with("m"){
-                        WasmAddress::new($arg, &caller.as_memory()).to_host_address(&caller.as_memory()).into()
+                        let ctx_inner = caller.data().lock()?;
+                        let memory = ctx_inner.get_memory()?;
+                        WasmAddress::new($arg, memory).to_host_address(memory).into()
                     }else{
                         $arg as libc::c_long
                     }
@@ -72,7 +72,8 @@ macro_rules! syscall_fwd {
     (name: $name: literal, num: $num: literal) => {
         paste::item!{
             pub(crate) fn [<$name>]() -> i64 {
-                info!("module has executed the '{}' host function.", $name);
+                let tid = unsafe{libc::pthread_self()};
+                info!("module has executed the '{}' host function from thread {}.", $name, tid);
                 unsafe { libc::syscall($num) }
             }
         }
@@ -82,7 +83,8 @@ macro_rules! syscall_fwd {
     (name: $name: literal, num: $num: literal, args: [$($arg: ident: $arg_type: ty),+]) => {
         paste::item!{
             pub(crate) fn [<$name>](caller: Caller<'_, WaliCtx>, $($arg: $arg_type),+) -> i64 {
-                info!("module has executed the '{}' host function.", $name);
+                let tid = unsafe{libc::pthread_self()};
+                info!("module has executed the '{}' host function from thread {}.", $name, tid);
                 match [<$name _impl>](caller, $($arg),+) {
                     Ok(r) => r,
                     Err(e) => {
@@ -93,11 +95,13 @@ macro_rules! syscall_fwd {
             }
 
             #[allow(trivial_numeric_casts)]
-            fn [<$name _impl>](mut caller: Caller<'_, WaliCtx>, $($arg: $arg_type),+) -> Result<i64>{
+            fn [<$name _impl>](caller: Caller<'_, WaliCtx>, $($arg: $arg_type),+) -> Result<i64>{
 
                 let ($($arg),+) = ($(
                     if stringify!($arg).starts_with("m"){
-                        WasmAddress::new($arg as i32, &caller.as_memory()).to_host_address(&caller.as_memory()).into()
+                        let ctx_inner = caller.data().lock()?;
+                        let memory = ctx_inner.get_memory()?;
+                        WasmAddress::new($arg as i32, memory).to_host_address(memory).into()
                     }else{
                         $arg as libc::c_long
                     }

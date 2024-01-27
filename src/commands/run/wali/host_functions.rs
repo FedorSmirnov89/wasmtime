@@ -13,7 +13,6 @@ use crate::commands::{
             rt_sigprocmask, sendto, setpgid, setsockopt, shutdown, socket, stat, syscall_mmap,
             syscall_munmap, syscall_writev, uname, utimensat, write,
         },
-        threads::wasm_thread_spawn,
     },
     RunCommand,
 };
@@ -51,7 +50,7 @@ impl RunCommand {
         linker.func_wrap("wali", "__cl_copy_argv", cl_copy_argv)?;
 
         // threads
-        linker.func_wrap("wali", "__wasm_thread_spawn", wasm_thread_spawn)?;
+        // linker.func_wrap("wali", "__wasm_thread_spawn", wasm_thread_spawn)?;
 
         // sys calls
         linker.func_wrap("wali", "SYS_accept", accept)?;

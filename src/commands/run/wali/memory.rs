@@ -2,9 +2,7 @@
 
 use std::sync::atomic::AtomicU8;
 
-use wasmtime::{Caller, SharedMemory};
-
-use super::WaliCtx;
+use wasmtime::SharedMemory;
 
 pub(crate) mod address;
 pub(crate) mod writing;
@@ -24,34 +22,27 @@ impl AddressCalculation for &SharedMemory {
     }
 }
 
-pub(crate) trait AsMemory {
-    fn as_memory(&mut self) -> SharedMemory;
-}
+// pub(crate) trait AsMemory {
+//     fn as_memory(&mut self) -> SharedMemory;
+// }
 
-impl AsMemory for Caller<'_, WaliCtx> {
-    fn as_memory(&mut self) -> SharedMemory {
-        let memory_export = self
-            .get_export("memory")
-            .expect("module does not export memory");
-        match memory_export {
-            wasmtime::Extern::SharedMemory(s) => s,
-            _ => unreachable!("WALI modules always have shared memory"),
-        }
-    }
-}
+// impl AsMemory for Caller<'_, WaliCtx> {
+//     fn as_memory(&mut self) -> SharedMemory {
+//         let tid = unsafe { libc::syscall(libc::SYS_gettid) };
+//         tracing::debug!("getting memory from thread '{tid}'");
+//         let inner_ctx = self.data().lock().expect("could not lock ctx");
+//         inner_ctx.get_memory().expect("memory not set")
+//     }
+// }
 
 pub(crate) trait AsMemorySlice {
-    fn as_memory_slice(&mut self) -> &mut [AtomicU8];
+    fn as_memory_slice(&self) -> &mut [AtomicU8];
 }
 
-impl AsMemorySlice for &mut Caller<'_, WaliCtx> {
-    fn as_memory_slice(&mut self) -> &mut [AtomicU8] {
-        let memory = self.as_memory();
+impl AsMemorySlice for &SharedMemory {
+    fn as_memory_slice(&self) -> &mut [AtomicU8] {
         unsafe {
-            std::slice::from_raw_parts_mut(
-                memory.data().as_ptr() as *mut AtomicU8,
-                memory.data().len(),
-            )
+            std::slice::from_raw_parts_mut(self.data().as_ptr() as *mut AtomicU8, self.data().len())
         }
     }
 }

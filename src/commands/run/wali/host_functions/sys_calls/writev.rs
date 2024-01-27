@@ -1,22 +1,22 @@
 use anyhow::Result;
-use wasmtime::Caller;
+use wasmtime::{Caller, SharedMemory};
 
-use crate::commands::run::wali::{
-    memory::{address::WasmAddress, AsMemory},
-    WaliCtx,
-};
+use crate::commands::run::wali::{memory::address::WasmAddress, WaliCtx};
 
 use tracing::{error, info};
 
 pub(crate) fn syscall_writev(
-    mut caller: Caller<'_, WaliCtx>,
+    caller: Caller<'_, WaliCtx>,
     fd: i32,
     iov_offset: i32,
     iov_cnt: i32,
 ) -> i64 {
-    info!("module has executed the 'writev' host function");
-    let iov_addr_wasm = WasmAddress::new(iov_offset, &caller.as_memory());
-    match syscall_writev_impl(caller, fd, iov_addr_wasm, iov_cnt) {
+    let tid = unsafe { libc::pthread_self() };
+    info!("module has executed the 'writev' host function from thread {tid}.");
+    let ctx_guard = caller.data().lock().expect("could not lock ctx");
+    let memory = ctx_guard.get_memory().expect("memory not set");
+    let iov_addr_wasm = WasmAddress::new(iov_offset, memory);
+    match syscall_writev_impl(memory, fd, iov_addr_wasm, iov_cnt) {
         Ok(r) => r,
         Err(e) => {
             error!("error when calling writev: {e}");
@@ -26,13 +26,12 @@ pub(crate) fn syscall_writev(
 }
 
 fn syscall_writev_impl(
-    mut caller: Caller<'_, WaliCtx>,
+    memory: &SharedMemory,
     fd: i32,
     iov_addr_wasm: WasmAddress,
     iov_cnt: i32,
 ) -> Result<i64> {
-    let memory = caller.as_memory();
-    let iov_addr_host = iov_addr_wasm.to_host_address(&memory);
+    let iov_addr_host = iov_addr_wasm.to_host_address(memory);
 
     let iov_ptr = iov_addr_host.as_i64_ptr() as *const IoVecWasm;
     let iov_slice = unsafe { std::slice::from_raw_parts(iov_ptr, iov_cnt as usize) };
@@ -40,8 +39,8 @@ fn syscall_writev_impl(
     let mut iovs_host = vec![];
     for iov in iov_slice {
         let size = iov.iov_len as usize;
-        let base_wasm = WasmAddress::new(iov.iov_base, &memory);
-        let base_host = base_wasm.to_host_address(&memory).as_void_ptr();
+        let base_wasm = WasmAddress::new(iov.iov_base, memory);
+        let base_host = base_wasm.to_host_address(memory).as_void_ptr();
         let iov_host = libc::iovec {
             iov_base: base_host,
             iov_len: size,

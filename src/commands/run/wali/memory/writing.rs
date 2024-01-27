@@ -1,6 +1,7 @@
 use std::{ffi::CString, sync::atomic::Ordering};
 
 use anyhow::Result;
+use wasmtime::SharedMemory;
 
 use super::{address::WasmAddress, AsMemorySlice};
 
@@ -9,7 +10,7 @@ use super::{address::WasmAddress, AsMemorySlice};
 /// specified address. Returns the number of bytes written.
 ///
 pub(crate) fn write_c_string_into_module_memory(
-    memory: impl AsMemorySlice,
+    memory: &SharedMemory,
     wasm_addr: WasmAddress,
     s: CString,
 ) -> Result<usize> {
@@ -17,11 +18,7 @@ pub(crate) fn write_c_string_into_module_memory(
     write_into_memory(memory, wasm_addr, bytes)
 }
 
-fn write_into_memory(
-    mut memory: impl AsMemorySlice,
-    wasm_addr: WasmAddress,
-    bytes: &[u8],
-) -> Result<usize> {
+fn write_into_memory(memory: &SharedMemory, wasm_addr: WasmAddress, bytes: &[u8]) -> Result<usize> {
     let atomic_slice = memory.as_memory_slice();
     for idx in 0..bytes.len() {
         let mem_idx = wasm_addr.offset() + idx;

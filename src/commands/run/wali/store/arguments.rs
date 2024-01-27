@@ -2,9 +2,9 @@ use std::ffi::CString;
 
 use anyhow::{anyhow, Context, Result};
 
-use super::WaliCtx;
+use super::InnerCtx;
 
-impl WaliCtx {
+impl InnerCtx {
     ///
     /// Returns the argument at the provided index as CString (i.e., in the shape in
     /// which it will be writting into the module memory)

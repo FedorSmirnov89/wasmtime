@@ -2,10 +2,7 @@ use anyhow::Result;
 use tracing::{debug, error, info};
 use wasmtime::{Caller, SharedMemory};
 
-use crate::commands::run::wali::{
-    memory::{address::WasmAddress, AsMemory},
-    WaliCtx,
-};
+use crate::commands::run::wali::{memory::address::WasmAddress, WaliCtx};
 
 pub(crate) fn execve(caller: Caller<'_, WaliCtx>, path: i32, argv: i32, envp: i32) -> i64 {
     info!("module has executed the 'execve' host function.");
@@ -18,18 +15,14 @@ pub(crate) fn execve(caller: Caller<'_, WaliCtx>, path: i32, argv: i32, envp: i3
     }
 }
 
-fn execve_imp(
-    mut caller: Caller<'_, WaliCtx>,
-    path: i32,
-    argv_wasm: i32,
-    _envp: i32,
-) -> Result<i64> {
-    let memory = caller.as_memory();
-    let arr_ptr: *const i32 = WasmAddress::new(argv_wasm, &memory)
-        .to_host_address(&memory)
+fn execve_imp(caller: Caller<'_, WaliCtx>, path: i32, argv_wasm: i32, _envp: i32) -> Result<i64> {
+    let ctx_guard = caller.data().lock()?;
+    let memory = ctx_guard.get_memory()?;
+    let arr_ptr: *const i32 = WasmAddress::new(argv_wasm, memory)
+        .to_host_address(memory)
         .as_i32_ptr();
-    let mut cur_ptr = WasmAddress::new(argv_wasm, &memory)
-        .to_host_address(&memory)
+    let mut cur_ptr = WasmAddress::new(argv_wasm, memory)
+        .to_host_address(memory)
         .as_i32_ptr();
     let mut arg_c: usize = 0;
 
@@ -48,8 +41,8 @@ fn execve_imp(
     let arg_vec = null_terminated_address_vec(arr_ptr, arg_c, &memory);
     let arg_vec_ptr = arg_vec.as_ptr() as *const i64;
 
-    let path_str = WasmAddress::new(path, &memory)
-        .to_host_address(&memory)
+    let path_str = WasmAddress::new(path, memory)
+        .to_host_address(memory)
         .as_usize();
 
     debug!("ignoring the env vars for now");

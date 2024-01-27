@@ -13,7 +13,7 @@ use std::ffi::OsString;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use std::thread;
-use wasmtime::{Engine, Func, Linker, Module, Store, StoreLimits, Val, ValType};
+use wasmtime::{Engine, Func, Module, Store, StoreLimits, Val, ValType};
 use wasmtime_wasi::maybe_exit_on_error;
 use wasmtime_wasi::preview2;
 use wasmtime_wasi::sync::{ambient_authority, Dir, TcpListener, WasiCtxBuilder};
@@ -28,8 +28,6 @@ use wasmtime_wasi_threads::WasiThreadsCtx;
 
 #[cfg(feature = "wasi-http")]
 use wasmtime_wasi_http::WasiHttpCtx;
-
-use self::wali::WaliCtx;
 
 mod wali;
 
@@ -196,42 +194,8 @@ impl RunCommand {
             // - fuel for the store
             // - preloads
 
-            let mut linker = wasmtime::Linker::new(&engine);
-            self.instantiate_and_run_wali(engine, &mut linker, &main)
+            self.instantiate_and_run_wali(engine, main)
         }
-    }
-
-    fn instantiate_and_run_wali(
-        &self,
-        engine: Engine,
-        linker: &mut Linker<WaliCtx>,
-        main: &RunTarget,
-    ) -> Result<(), anyhow::Error> {
-        let module = match main {
-            RunTarget::Core(module) => module,
-            RunTarget::Component(_) => unreachable!("wali does not support components atm"),
-        };
-
-        self.link_wali_host_functions(linker)?;
-        // The main module might be allowed to have unknown imports, which
-        // should be defined as traps:
-        if self.run.common.wasm.unknown_imports_trap == Some(true) {
-            #[cfg(feature = "cranelift")]
-            linker.define_unknown_imports_as_traps(module)?;
-            #[cfg(not(feature = "cranelift"))]
-            bail!("support for `unknown-imports-trap` disabled at compile time");
-        } else {
-            bail!("only working with trapping unknown imports atm");
-        }
-
-        let wali_ctx = WaliCtx::new(&self, module, linker)?;
-        let mut store = Store::new(&engine, wali_ctx);
-
-        if !self.preloads.is_empty() {
-            bail!("preloads are not supported with WALI modules");
-        }
-
-        self.load_wali_module(&mut store, linker, main)
     }
 
     fn instantiate_and_run_wasi(
