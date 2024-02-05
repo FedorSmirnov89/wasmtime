@@ -8,10 +8,10 @@ use crate::commands::{
         arguments::{cl_copy_argv, cl_get_argc, cl_get_argv_len},
         sys_calls::{
             accept, access, alarm, bind, brk, clock_gettime, clock_nanosleep, close, connect, dup,
-            dup2, dup3, execve, exit_group, fcntl, flock, fork, fstat, fstatfs, futex, getdents64,
-            getpid, gettid, kill, listen, lseek, lstat, mprotect, nanosleep, open, pipe, read,
-            rt_sigprocmask, sendto, setpgid, setsockopt, shutdown, socket, stat, syscall_mmap,
-            syscall_munmap, syscall_writev, uname, utimensat, write,
+            dup2, dup3, execve, exit_group, fcntl, flock, fork, fstat, fstatfs, futex, get_cwd,
+            getdents64, getpid, gettid, kill, listen, lseek, lstat, mprotect, nanosleep, open,
+            pipe, read, rt_sigprocmask, sendto, setpgid, setsockopt, shutdown, socket, stat,
+            syscall_mmap, syscall_munmap, syscall_writev, uname, utimensat, write,
         },
     },
     RunCommand,
@@ -62,6 +62,7 @@ impl RunCommand {
         linker.func_wrap("wali", "SYS_clock_nanosleep", clock_nanosleep)?;
         linker.func_wrap("wali", "SYS_close", close)?;
         linker.func_wrap("wali", "SYS_connect", connect)?;
+        linker.func_wrap("wali", "SYS_getcwd", get_cwd)?;
         linker.func_wrap("wali", "SYS_dup", dup)?;
         linker.func_wrap("wali", "SYS_dup2", dup2)?;
         linker.func_wrap("wali", "SYS_dup3", dup3)?;

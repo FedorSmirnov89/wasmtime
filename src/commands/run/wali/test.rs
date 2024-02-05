@@ -55,9 +55,9 @@ wali_test!("clock_gettime");
 wali_test!("clock_nanosleep");
 wali_test!("math");
 wali_test!("mmap");
-// wali_test!("mmap2"); // Exit status 1
+wali_test!("mmap2"); // Needs the file 'sample_text.txt' in the directory where it is run
 wali_test!("mprotect");
-// wali_test!("nanosleep"); // Exit status 1
+// wali_test!("nanosleep"); // Exit status 1 -- also for the iwasm version
 wali_test!("printf");
 wali_test!("sizes");
 wali_test!("uname");
@@ -89,6 +89,8 @@ wali_test!("execve");
 wali_test!("thread");
 wali_test!("access_thread");
 wali_test!("simple_thread");
+wali_test!("safe_thread");
+wali_test!("statall");
 // wali_test!("fstat"); // fails since no proper exit group implementation atm
 // wali_test!("fstat2"); // fails since no proper exit group implementation atm
 // wali_test!("fstatfs"); // fails since no proper exit group implementation atm
