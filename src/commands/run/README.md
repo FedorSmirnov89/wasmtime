@@ -112,6 +112,7 @@ Currently, the implementation focus is on implementing the functionality necessa
 - mmap2.wasm -- exit status 1
 - nanosleep.wasm -- exit status 1
 - getdirents.wasm -- missing file
+- statfs.wasm -- missing file
 - fstat.wasm -- needs proper exit group management
 - fstat2.wasm -- needs proper exit group management
 - fstatfs.wasm -- needs proper exit group management
@@ -131,6 +132,5 @@ Currently, the implementation focus is on implementing the functionality necessa
 - sigsuspend.wasm -- needs rt_sigaction
 - sleep_kill.wasm -- hangs after calling nanosleep (same when run with iwasm)
 - stat.wasm -- needs exit group
-- statfs.wasm -- needs statfs
 - streamin.wasm -- not sure what this one is missing; check on it later
 - utime.wasm -- needs sys_exit_group

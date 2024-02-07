@@ -137,6 +137,7 @@ syscall_fwd! {name: "uname", num: 63, args: [m1]}
 syscall_fwd! {name: "flock", num: 73, args: [a1, a2]}
 syscall_fwd! {name: "get_cwd", num: 79, args: [m1, a2]}
 syscall_fwd! {name: "setpgid", num: 109, args: [a1, a2]}
+syscall_fwd! {name: "statfs", num: 137, args: [m1, m2]}
 syscall_fwd! {name: "fstatfs", num: 138, args: [a1, m2]}
 syscall_fwd! {name: "gettid", num: 186}
 syscall_fwd! {name: "futex", num: 202, args: [m1, a2, a3, m4, m5, a6]}

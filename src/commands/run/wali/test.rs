@@ -91,6 +91,7 @@ wali_test!("access_thread");
 wali_test!("simple_thread");
 wali_test!("safe_thread");
 wali_test!("statall");
+// wali_test!("statfs"); // lacks a file (same failure for the iwasm test)
 // wali_test!("fstat"); // fails since no proper exit group implementation atm
 // wali_test!("fstat2"); // fails since no proper exit group implementation atm
 // wali_test!("fstatfs"); // fails since no proper exit group implementation atm

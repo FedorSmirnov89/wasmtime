@@ -11,7 +11,7 @@ use crate::commands::{
             dup2, dup3, execve, exit_group, fcntl, flock, fork, fstat, fstatfs, futex, get_cwd,
             getdents64, getpid, gettid, kill, listen, lseek, lstat, mprotect, nanosleep, open,
             pipe, read, rt_sigprocmask, sendto, setpgid, setsockopt, shutdown, socket, stat,
-            syscall_mmap, syscall_munmap, syscall_writev, uname, utimensat, write,
+            statfs, syscall_mmap, syscall_munmap, syscall_writev, uname, utimensat, write,
         },
     },
     RunCommand,
@@ -48,9 +48,6 @@ impl RunCommand {
         linker.func_wrap("wali", "__cl_get_argc", cl_get_argc)?;
         linker.func_wrap("wali", "__cl_get_argv_len", cl_get_argv_len)?;
         linker.func_wrap("wali", "__cl_copy_argv", cl_copy_argv)?;
-
-        // threads
-        // linker.func_wrap("wali", "__wasm_thread_spawn", wasm_thread_spawn)?;
 
         // sys calls
         linker.func_wrap("wali", "SYS_accept", accept)?;
@@ -91,6 +88,7 @@ impl RunCommand {
         linker.func_wrap("wali", "SYS_shutdown", shutdown)?;
         linker.func_wrap("wali", "SYS_socket", socket)?;
         linker.func_wrap("wali", "SYS_stat", stat)?;
+        linker.func_wrap("wali", "SYS_statfs", statfs)?;
         linker.func_wrap("wali", "SYS_mmap", syscall_mmap)?;
         linker.func_wrap("wali", "SYS_mprotect", mprotect)?;
         linker.func_wrap("wali", "SYS_munmap", syscall_munmap)?;
